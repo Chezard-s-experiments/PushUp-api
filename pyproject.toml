@@ -1,0 +1,97 @@
+[project]
+name = "PushUp-api"
+version = "0.0.0"
+description = ""
+readme = "README.md"
+requires-python = "==3.14.*"
+dependencies = [
+    "alembic",
+    "argon2-cffi",
+    "asyncpg",
+    "babel",
+    "email-validator>=2.3.0",
+    "fastapi",
+    "fastapi-cli",
+    "greenlet",
+    "httpx",
+    "orjson",
+    "pydantic",
+    "pydantic-extra-types",
+    "pydantic-settings",
+    "pyjwt",
+    "python-cq",
+    "python-injection[async]",
+    "python-ulid",
+    "sqlalchemy",
+    "typer",
+    "uvicorn",
+    "uvloop",
+]
+
+[dependency-groups]
+dev = [
+    "asgi-lifespan",
+    "faker",
+    "mypy",
+    "pytest",
+    "pytest-asyncio",
+    "pytest-cov",
+    "pytest-env",
+    "pytest-results",
+    "ruff",
+]
+
+[tool.coverage.report]
+exclude_also = ["raise NotImplementedError"]
+
+[tool.coverage.run]
+omit = [
+    "./main.py",
+    "./src/infra/cli/*",
+    "./src/infra/db/migrations/*",
+]
+
+[tool.mypy]
+check_untyped_defs = true
+disallow_any_generics = true
+disallow_untyped_defs = true
+exclude = ["src/infra/db/migrations/versions/"]
+no_implicit_optional = true
+plugins = ["pydantic.mypy"]
+warn_redundant_casts = true
+warn_unused_configs = true
+warn_unused_ignores = true
+
+[tool.pytest]
+python_files = ["test_*.py"]
+addopts = ["--tb", "short", "--cov", "./", "--cov-report", "term-missing:skip-covered"]
+asyncio_default_fixture_loop_scope = "function"
+asyncio_mode = "auto"
+testpaths = ["./tests/"]
+tmp_path_retention_count = "1"
+tmp_path_retention_policy = "failed"
+
+[tool.pytest_env]
+PROFILE = "test"
+ALLOWED_HOSTS = '["*"]'
+DB__NAME = "pushup_api_test"
+SECRET_KEY = "kKVm&hmMW!G2ouY"
+
+[tool.ruff]
+line-length = 88
+indent-width = 4
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
+[tool.ruff.lint]
+extend-select = ["I", "N"]
+fixable = ["ALL"]
+
+[tool.uv]
+default-groups = ["dev"]
+package = false
+

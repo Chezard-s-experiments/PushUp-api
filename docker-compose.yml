@@ -1,0 +1,15 @@
+services:
+  database:
+    image: postgres:alpine
+    environment:
+      POSTGRES_DB: pushup_api
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+    ports:
+      - "5432:5432"
+    volumes:
+      - database-storage:/var/lib/postgresql/data
+
+volumes:
+  database-storage:
+

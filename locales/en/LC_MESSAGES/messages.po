@@ -1,0 +1,26 @@
+# ----- Header -----
+
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+
+# ----- exceptions.py -----
+
+msgid "forbidden"
+msgstr "You don't have permission to access this resource."
+
+msgid "unauthorized"
+msgstr "Unauthorized access."
+
+# ----- ctx/auth -----
+
+msgid "pin_message"
+msgstr ""
+"Your verification code: {pin}\n"
+"Please enter this code within 15 minutes to confirm your identity. "
+"If you did not request this code, please disregard this message."
+
+# ----- ctx/user_profile -----
+
+msgid "user_already_finalized"
+msgstr "User (id: \"{user_id}\") has already been finalized."

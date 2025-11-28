@@ -1,0 +1,9 @@
+name: Compile Messages
+description: Compiles translation files
+
+runs:
+  using: "composite"
+  steps:
+    - name: Babel
+      shell: bash
+      run: uv run pybabel compile -d ./locales/
