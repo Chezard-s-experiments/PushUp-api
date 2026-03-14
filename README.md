@@ -41,8 +41,17 @@ DB__PASSWORD=root
 
 ## Démarrage
 
+### Tout-en-un (Docker)
+
 ```bash
-docker compose up -d          # Postgres local
+docker-compose up --build     # API + PostgreSQL
+# API disponible sur http://127.0.0.1:8000
+```
+
+### Développement local
+
+```bash
+docker compose up -d          # Postgres seul
 make dev                      # uvicorn main:app --reload --loop uvloop
 # API disponible sur http://127.0.0.1:8000
 ```
