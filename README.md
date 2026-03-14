@@ -11,9 +11,11 @@ Backend FastAPI/Typer pour la plateforme PushUp : architecture hexagonale (`co
 
 ## Pré-requis
 
-1. Installer `uv` ≥ 0.4 : `curl -LsSf https://astral.sh/uv/install.sh | sh`.
+1. Installer `uv` ≥ 0.4 :
+   - **Linux / macOS** : `curl -LsSf https://astral.sh/uv/install.sh | sh`
+   - **Windows (PowerShell)** : `powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"`
 2. Disposer de Docker Desktop (ou Docker Engine) pour Postgres.
-3. Facultatif : `make` disponible sur l’environnement.
+3. Facultatif : `make` disponible sur l’environnement (`choco install make` sur Windows).
 
 ## Installation
 
