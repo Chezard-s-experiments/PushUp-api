@@ -1,7 +1,7 @@
 from injection import get_instance
 
 from src.infra.api.builder import FastAPIBuilder
-from src.infra.api.routes import auth, exercises, users
+from src.infra.api.routes import auth, exercises, health, users
 from src.infra.cli.apps import db
 from src.infra.cli.builder import TyperBuilder
 
@@ -19,6 +19,7 @@ else:
     app = (
         get_instance(FastAPIBuilder)
         .include_routers(
+            health.router,
             auth.router,
             users.router,
             exercises.router,
