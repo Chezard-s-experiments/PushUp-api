@@ -1,4 +1,4 @@
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timezone
 from uuid import UUID
 
 import pytest
@@ -20,7 +20,7 @@ class FakeDateTime(DateTimeService):
         # utilise une date suffisamment éloignée pour éviter les expirations lors de l'exécution des tests
         self.value = datetime(2100, 1, 1, tzinfo=UTC)
 
-    def now(self, tz=UTC) -> datetime:
+    def now(self, tz: timezone = UTC) -> datetime:
         return self.value.astimezone(tz)
 
 

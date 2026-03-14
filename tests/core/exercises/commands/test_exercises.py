@@ -1,4 +1,4 @@
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timezone
 from uuid import UUID
 
 import pytest
@@ -23,7 +23,7 @@ from src.services.uuid.abc import UUIDGenerator
 
 
 class FakeDateTime(DateTimeService):
-    def now(self, tz=UTC) -> datetime:
+    def now(self, tz: timezone = UTC) -> datetime:
         return datetime(2025, 1, 1, tzinfo=tz)
 
 

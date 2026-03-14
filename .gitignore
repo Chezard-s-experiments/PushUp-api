@@ -377,3 +377,5 @@ settings_local.py
 config_local.py
 
 local/
+
+personal-tool/
