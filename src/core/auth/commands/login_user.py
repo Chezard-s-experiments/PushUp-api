@@ -46,7 +46,7 @@ class LoginUserHandler(NamedTuple):
             await self.repo.update(updated_user)
 
         token = self.jwt.encode(
-            {"user_id": str(user.id), "email": user.email},
+            {"user_id": str(user.id), "email": str(user.email)},
             lifespan=timedelta(hours=1),
         )
 

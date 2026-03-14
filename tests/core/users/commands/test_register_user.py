@@ -34,10 +34,10 @@ class InMemoryUserRepository(UserRepository):
         self._by_email: dict[str, User] = {}
 
     async def add(self, user: User) -> None:
-        self._by_email[user.email] = user
+        self._by_email[str(user.email)] = user
 
     async def update(self, user: User) -> None:
-        self._by_email[user.email] = user
+        self._by_email[str(user.email)] = user
 
     async def get_by_email(self, email: str) -> User | None:
         return self._by_email.get(email)
@@ -62,7 +62,7 @@ async def test_register_user_hashes_password() -> None:
     )
     user = await handler.handle(command)
 
-    assert user.email == command.email
+    assert str(user.email) == command.email
     assert (
         user.hashed_password.get_secret_value() != command.password.get_secret_value()
     )

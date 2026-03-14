@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.users.aggregates import User
 from src.core.users.ports.repo import UserRepository
+from src.core.users.value_objects import Email
 from src.infra.db.tables import UserTable
 
 
@@ -48,7 +49,7 @@ class SQLAUserRepository(UserRepository):
     def _to_table_dict(self, user: User) -> dict[str, object]:
         return {
             "id": user.id,
-            "email": user.email,
+            "email": str(user.email),
             "password_hash": user.hashed_password.get_secret_value(),
             "first_name": user.first_name,
             "last_name": user.last_name,
@@ -59,7 +60,7 @@ class SQLAUserRepository(UserRepository):
     def _from_table(self, table: UserTable) -> User:
         return User(
             id=table.id,
-            email=table.email,
+            email=Email(table.email),
             hashed_password=SecretStr(table.password_hash),
             first_name=table.first_name,
             last_name=table.last_name,
