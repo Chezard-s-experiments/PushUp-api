@@ -11,9 +11,7 @@ from src.core.users.value_objects import Email, HashedPassword
 
 
 def _make_hashed_password() -> HashedPassword:
-    return HashedPassword.from_hash(
-        "$argon2id$v=19$m=65536,t=3,p=4$fakesalt$fakehash"
-    )
+    return HashedPassword.from_hash("$argon2id$v=19$m=65536,t=3,p=4$fakesalt$fakehash")
 
 
 def test_user_creation_with_required_fields() -> None:
