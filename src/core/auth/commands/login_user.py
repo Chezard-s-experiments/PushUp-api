@@ -7,6 +7,7 @@ from pydantic import BaseModel, EmailStr, SecretStr
 from src.core.auth.dtos.tokens import AccessTokenPayload
 from src.core.auth.exceptions import InvalidCredentialsError
 from src.core.users.ports.repo import UserRepository
+from src.core.users.value_objects import HashedPassword
 from src.services.datetime.abc import DateTimeService
 from src.services.hasher.abc import Hasher
 from src.services.jwt.abc import JWTService
@@ -31,22 +32,23 @@ class LoginUserHandler(NamedTuple):
             raise InvalidCredentialsError()
 
         password = command.password.get_secret_value()
-        hashed_password = user.hashed_password.get_secret_value()
 
-        if not self.hasher.verify(password, hashed_password):
+        if not user.hashed_password.verify(password, self.hasher):
             raise InvalidCredentialsError()
 
-        if self.hasher.needs_rehash(hashed_password):
+        if user.hashed_password.needs_rehash(self.hasher):
             updated_user = user.model_copy(
                 update={
-                    "hashed_password": SecretStr(self.hasher.hash(password)),
+                    "hashed_password": HashedPassword.from_hash(
+                        self.hasher.hash(password)
+                    ),
                     "updated_at": self.datetime.utcnow(),
                 }
             )
             await self.repo.update(updated_user)
 
         token = self.jwt.encode(
-            {"user_id": str(user.id), "email": user.email},
+            {"user_id": str(user.id), "email": str(user.email)},
             lifespan=timedelta(hours=1),
         )
 

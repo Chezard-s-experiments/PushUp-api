@@ -6,6 +6,7 @@ from pydantic import BaseModel, EmailStr, SecretStr, field_validator
 from src.core.users.aggregates import User
 from src.core.users.exceptions import EmailAlreadyUsedError
 from src.core.users.ports.repo import UserRepository
+from src.core.users.value_objects import Email, HashedPassword
 from src.services.datetime.abc import DateTimeService
 from src.services.hasher.abc import Hasher
 from src.services.uuid.abc import UUIDGenerator
@@ -40,8 +41,8 @@ class RegisterUserHandler(NamedTuple):
         now = self.datetime.utcnow()
         user = User(
             id=self.uuid.next(),
-            email=command.email,
-            hashed_password=SecretStr(
+            email=Email(command.email),
+            hashed_password=HashedPassword.from_hash(
                 self.hasher.hash(command.password.get_secret_value())
             ),
             first_name=command.first_name,

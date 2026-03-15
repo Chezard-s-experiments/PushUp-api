@@ -9,6 +9,7 @@ from src.core.auth.dtos.tokens import AccessTokenPayload
 from src.core.auth.exceptions import InvalidCredentialsError
 from src.core.users.aggregates import User
 from src.core.users.ports.repo import UserRepository
+from src.core.users.value_objects import Email, HashedPassword
 from src.services.datetime.abc import DateTimeService
 from src.services.hasher.argon2 import Argon2Hasher
 from src.services.jwt.pyjwt import PyJWTService
@@ -40,7 +41,7 @@ class InMemoryUserRepository(UserRepository):
         self._user = user
 
     async def get_by_email(self, email: str) -> User | None:
-        if self._user and self._user.email == email:
+        if self._user and str(self._user.email) == email:
             return self._user
         return None
 
@@ -53,8 +54,8 @@ class InMemoryUserRepository(UserRepository):
 def make_user(hasher: Argon2Hasher) -> User:
     return User(
         id=UUID(int=1),
-        email="john@example.com",
-        hashed_password=SecretStr(hasher.hash("s3cret!")),
+        email=Email("john@example.com"),
+        hashed_password=HashedPassword.from_hash(hasher.hash("s3cret!")),
         first_name="John",
         last_name="Doe",
         created_at=datetime(2025, 1, 1, tzinfo=UTC),
@@ -71,7 +72,7 @@ async def test_login_user_returns_access_token() -> None:
     jwt_service = PyJWTService(datetime_service, "secret")
     handler = LoginUserHandler(datetime_service, hasher, jwt_service, repo)
 
-    command = LoginUserCommand(email=user.email, password=SecretStr("s3cret!"))
+    command = LoginUserCommand(email=str(user.email), password=SecretStr("s3cret!"))
     tokens = await handler.handle(command)
 
     assert isinstance(tokens, AccessTokenPayload)
@@ -90,5 +91,5 @@ async def test_login_user_with_bad_password_raises() -> None:
 
     with pytest.raises(InvalidCredentialsError):
         await handler.handle(
-            LoginUserCommand(email=user.email, password=SecretStr("wrong")),
+            LoginUserCommand(email=str(user.email), password=SecretStr("wrong")),
         )
