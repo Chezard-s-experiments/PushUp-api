@@ -9,7 +9,7 @@ from src.core.auth.dtos.tokens import AccessTokenPayload
 from src.core.auth.exceptions import InvalidCredentialsError
 from src.core.users.aggregates import User
 from src.core.users.ports.repo import UserRepository
-from src.core.users.value_objects import Email
+from src.core.users.value_objects import Email, HashedPassword
 from src.services.datetime.abc import DateTimeService
 from src.services.hasher.argon2 import Argon2Hasher
 from src.services.jwt.pyjwt import PyJWTService
@@ -55,7 +55,7 @@ def make_user(hasher: Argon2Hasher) -> User:
     return User(
         id=UUID(int=1),
         email=Email("john@example.com"),
-        hashed_password=SecretStr(hasher.hash("s3cret!")),
+        hashed_password=HashedPassword.from_hash(hasher.hash("s3cret!")),
         first_name="John",
         last_name="Doe",
         created_at=datetime(2025, 1, 1, tzinfo=UTC),

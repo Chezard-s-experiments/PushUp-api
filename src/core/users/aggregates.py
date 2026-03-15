@@ -1,15 +1,15 @@
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel, SecretStr
+from pydantic import BaseModel
 
-from src.core.users.value_objects import Email
+from src.core.users.value_objects import Email, HashedPassword
 
 
 class User(BaseModel):
     id: UUID
     email: Email
-    hashed_password: SecretStr
+    hashed_password: HashedPassword
     first_name: str | None = None
     last_name: str | None = None
     created_at: datetime

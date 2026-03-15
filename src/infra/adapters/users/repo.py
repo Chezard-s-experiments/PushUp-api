@@ -2,14 +2,13 @@ from dataclasses import dataclass
 from uuid import UUID
 
 from injection import injectable
-from pydantic import SecretStr
 from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.users.aggregates import User
 from src.core.users.ports.repo import UserRepository
-from src.core.users.value_objects import Email
+from src.core.users.value_objects import Email, HashedPassword
 from src.infra.db.tables import UserTable
 
 
@@ -61,7 +60,7 @@ class SQLAUserRepository(UserRepository):
         return User(
             id=table.id,
             email=Email(table.email),
-            hashed_password=SecretStr(table.password_hash),
+            hashed_password=HashedPassword.from_hash(table.password_hash),
             first_name=table.first_name,
             last_name=table.last_name,
             created_at=table.created_at,
