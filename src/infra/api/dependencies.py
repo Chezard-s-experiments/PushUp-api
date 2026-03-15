@@ -19,7 +19,12 @@ async def get_identity_data(
     access_token: Annotated[str, Depends(get_access_token)],
     jwt: Inject[JWTService],
 ) -> dict[str, Any]:
-    return jwt.decode(access_token)
+    payload = jwt.decode(access_token)
+
+    if payload.get("type") != "access":
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+
+    return payload
 
 
 async def get_claimant_id(

@@ -64,7 +64,7 @@ def make_user(hasher: Argon2Hasher) -> User:
 
 
 @pytest.mark.asyncio()
-async def test_login_user_returns_access_token() -> None:
+async def test_login_user_returns_access_and_refresh_tokens() -> None:
     hasher = Argon2Hasher()
     user = make_user(hasher)
     repo = InMemoryUserRepository(user)
@@ -76,8 +76,14 @@ async def test_login_user_returns_access_token() -> None:
     tokens = await handler.handle(command)
 
     assert isinstance(tokens, AccessTokenPayload)
-    decoded = jwt_service.decode(tokens.access_token)
-    assert decoded["user_id"] == str(user.id)
+
+    decoded_access = jwt_service.decode(tokens.access_token)
+    assert decoded_access["user_id"] == str(user.id)
+    assert decoded_access["type"] == "access"
+
+    decoded_refresh = jwt_service.decode(tokens.refresh_token)
+    assert decoded_refresh["user_id"] == str(user.id)
+    assert decoded_refresh["type"] == "refresh"
 
 
 @pytest.mark.asyncio()

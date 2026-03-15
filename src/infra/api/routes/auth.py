@@ -1,4 +1,3 @@
-from datetime import timedelta
 from typing import Annotated
 from uuid import UUID
 
@@ -8,6 +7,7 @@ from injection.ext.fastapi import Inject
 from pydantic import BaseModel, EmailStr
 
 from src.core.auth.commands.login_user import LoginUserCommand
+from src.core.auth.commands.refresh_token import RefreshTokenCommand
 from src.core.auth.dtos.tokens import AccessTokenPayload
 from src.core.users.aggregates import User
 from src.core.users.commands.register_user import RegisterUserCommand
@@ -33,6 +33,10 @@ class RegisterPayload(BaseModel):
     last_name: str | None = None
 
 
+class RefreshPayload(BaseModel):
+    refresh_token: str
+
+
 class AuthWithUserResponse(BaseModel):
     token: AccessTokenPayload
     user: UserProfileView
@@ -49,6 +53,11 @@ async def register(
     command_bus: Inject[CommandBus[User]],
     jwt: Inject[JWTService],
 ) -> AuthWithUserResponse:
+    from src.core.auth.commands.login_user import (
+        ACCESS_TOKEN_LIFESPAN,
+        REFRESH_TOKEN_LIFESPAN,
+    )
+
     command = RegisterUserCommand(
         email=payload.email,
         password=payload.password,
@@ -57,26 +66,65 @@ async def register(
     )
     user = await command_bus.dispatch(command)
 
+    claims = {"user_id": str(user.id), "email": str(user.email)}
+
     access_token = jwt.encode(
-        {"user_id": str(user.id), "email": str(user.email)},
-        lifespan=timedelta(hours=1),
+        {**claims, "type": "access"},
+        lifespan=ACCESS_TOKEN_LIFESPAN,
+    )
+    refresh_token = jwt.encode(
+        {**claims, "type": "refresh"},
+        lifespan=REFRESH_TOKEN_LIFESPAN,
     )
 
     return AuthWithUserResponse(
-        token=AccessTokenPayload(access_token=access_token),
+        token=AccessTokenPayload(
+            access_token=access_token,
+            refresh_token=refresh_token,
+        ),
         user=UserProfileView.model_validate(user.to_public_dict()),
     )
 
 
-@router.post("/login", operation_id="Login", response_model=AccessTokenPayload)
+@router.post(
+    "/login",
+    operation_id="Login",
+    response_model=AuthWithUserResponse,
+)
 async def login(
     payload: LoginPayload,
     command_bus: Inject[CommandBus[AccessTokenPayload]],
-) -> AccessTokenPayload:
+    query_bus: Inject[QueryBus[UserProfileView | None]],
+    jwt: Inject[JWTService],
+) -> AuthWithUserResponse:
     command = LoginUserCommand(
         email=payload.email,
         password=payload.password,
     )
+    token = await command_bus.dispatch(command)
+
+    decoded = jwt.decode(token.access_token)
+    user_id = UUID(decoded["user_id"])
+
+    query = GetUserProfileQuery(user_id=user_id)
+    view = await query_bus.dispatch(query)
+
+    if view is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+
+    return AuthWithUserResponse(token=token, user=view)
+
+
+@router.post(
+    "/refresh",
+    operation_id="RefreshToken",
+    response_model=AccessTokenPayload,
+)
+async def refresh(
+    payload: RefreshPayload,
+    command_bus: Inject[CommandBus[AccessTokenPayload]],
+) -> AccessTokenPayload:
+    command = RefreshTokenCommand(refresh_token=payload.refresh_token)
     return await command_bus.dispatch(command)
 
 

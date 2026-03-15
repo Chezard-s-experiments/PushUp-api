@@ -12,6 +12,9 @@ from src.services.datetime.abc import DateTimeService
 from src.services.hasher.abc import Hasher
 from src.services.jwt.abc import JWTService
 
+ACCESS_TOKEN_LIFESPAN = timedelta(hours=1)
+REFRESH_TOKEN_LIFESPAN = timedelta(days=7)
+
 
 class LoginUserCommand(BaseModel):
     email: EmailStr
@@ -47,9 +50,18 @@ class LoginUserHandler(NamedTuple):
             )
             await self.repo.update(updated_user)
 
-        token = self.jwt.encode(
-            {"user_id": str(user.id), "email": str(user.email)},
-            lifespan=timedelta(hours=1),
+        claims = {"user_id": str(user.id), "email": str(user.email)}
+
+        access_token = self.jwt.encode(
+            {**claims, "type": "access"},
+            lifespan=ACCESS_TOKEN_LIFESPAN,
+        )
+        refresh_token = self.jwt.encode(
+            {**claims, "type": "refresh"},
+            lifespan=REFRESH_TOKEN_LIFESPAN,
         )
 
-        return AccessTokenPayload(access_token=token)
+        return AccessTokenPayload(
+            access_token=access_token,
+            refresh_token=refresh_token,
+        )
