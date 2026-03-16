@@ -52,6 +52,8 @@ class SQLAUserRepository(UserRepository):
             "password_hash": user.hashed_password.get_secret_value(),
             "first_name": user.first_name,
             "last_name": user.last_name,
+            "oauth_provider": str(user.oauth_provider) if user.oauth_provider else None,
+            "oauth_id": user.oauth_id,
             "created_at": user.created_at,
             "updated_at": user.updated_at,
         }
@@ -63,6 +65,8 @@ class SQLAUserRepository(UserRepository):
             hashed_password=HashedPassword.from_hash(table.password_hash),
             first_name=table.first_name,
             last_name=table.last_name,
+            oauth_provider=table.oauth_provider,
+            oauth_id=table.oauth_id,
             created_at=table.created_at,
             updated_at=table.updated_at,
         )

@@ -16,6 +16,8 @@ class UserTable(Table):
     password_hash: Mapped[str] = mapped_column(String(255))
     first_name: Mapped[str | None] = mapped_column(String(64))
     last_name: Mapped[str | None] = mapped_column(String(64))
+    oauth_provider: Mapped[str | None] = mapped_column(String(32))
+    oauth_id: Mapped[str | None] = mapped_column(String(255))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
 
