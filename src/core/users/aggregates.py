@@ -3,7 +3,7 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
-from src.core.users.value_objects import Email, HashedPassword
+from src.core.users.value_objects import Email, HashedPassword, OAuthProvider
 
 
 class User(BaseModel):
@@ -12,6 +12,8 @@ class User(BaseModel):
     hashed_password: HashedPassword
     first_name: str | None = None
     last_name: str | None = None
+    oauth_provider: OAuthProvider | None = None
+    oauth_id: str | None = None
     created_at: datetime
     updated_at: datetime
 
@@ -21,6 +23,8 @@ class User(BaseModel):
             "email": str(self.email),
             "first_name": self.first_name,
             "last_name": self.last_name,
+            "oauth_provider": str(self.oauth_provider) if self.oauth_provider else None,
+            "oauth_id": self.oauth_id,
             "created_at": self.created_at,
             "updated_at": self.updated_at,
         }

@@ -7,6 +7,7 @@ from injection.ext.fastapi import Inject
 from pydantic import BaseModel, EmailStr
 
 from src.core.auth.commands.login_user import LoginUserCommand
+from src.core.auth.commands.login_with_oauth import LoginWithOAuthCommand
 from src.core.auth.commands.refresh_token import RefreshTokenCommand
 from src.core.auth.dtos.tokens import AccessTokenPayload
 from src.core.users.aggregates import User
@@ -35,6 +36,10 @@ class RegisterPayload(BaseModel):
 
 class RefreshPayload(BaseModel):
     refresh_token: str
+
+
+class OAuthLoginPayload(BaseModel):
+    token: str
 
 
 class AuthWithUserResponse(BaseModel):
@@ -140,3 +145,33 @@ async def get_current_user(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
 
     return view
+
+
+@router.post(
+    "/oauth",
+    operation_id="LoginWithOAuth",
+    response_model=AuthWithUserResponse,
+)
+async def login_with_oauth(
+    payload: OAuthLoginPayload,
+    command_bus: Inject[CommandBus[AccessTokenPayload]],
+    query_bus: Inject[QueryBus[UserProfileView | None]],
+    jwt: Inject[JWTService],
+) -> AuthWithUserResponse:
+    command = LoginWithOAuthCommand(
+        # Pour l'instant on ne supporte que Google côté infra.
+        provider="google",
+        token=payload.token,
+    )
+    token = await command_bus.dispatch(command)
+
+    decoded = jwt.decode(token.access_token)
+    user_id = UUID(decoded["user_id"])
+
+    query = GetUserProfileQuery(user_id=user_id)
+    view = await query_bus.dispatch(query)
+
+    if view is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+
+    return AuthWithUserResponse(token=token, user=view)
