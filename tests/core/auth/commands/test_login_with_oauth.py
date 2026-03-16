@@ -123,4 +123,3 @@ async def test_login_with_oauth_links_existing_user_by_email() -> None:
     tokens = await handler.handle(command)
 
     assert isinstance(tokens, AccessTokenPayload)
-
