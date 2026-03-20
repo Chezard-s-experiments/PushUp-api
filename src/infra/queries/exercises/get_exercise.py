@@ -21,6 +21,11 @@ class GetExerciseHandler(NamedTuple):
             ExerciseTable.id,
             ExerciseTable.name,
             ExerciseTable.description,
+            ExerciseTable.exercise_type,
+            ExerciseTable.muscle_groups,
+            ExerciseTable.difficulty,
+            ExerciseTable.equipment,
+            ExerciseTable.estimated_duration,
             ExerciseTable.created_at,
             ExerciseTable.updated_at,
         ).where(ExerciseTable.id == query.exercise_id)
@@ -30,4 +35,4 @@ class GetExerciseHandler(NamedTuple):
         if row is None:
             return None
 
-        return ExerciseRead.model_validate(row)
+        return ExerciseRead.model_validate(dict(row))

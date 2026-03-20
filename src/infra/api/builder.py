@@ -11,7 +11,7 @@ from injection import MappedScope, injectable
 from jwt import InvalidTokenError
 from pydantic import ValidationError
 
-from src.enums import Scope
+from src.enums import Profile, Scope
 from src.exceptions import ApplicationError
 from src.infra.api.dependencies import get_locale
 from src.infra.entrypoint import lifespan
@@ -27,6 +27,14 @@ class FastAPIBuilder:
     def build(self) -> FastAPI:
         settings = self.settings
         debug = settings.debug
+        # En dev, on autorise toutes les origines afin de faciliter l'intégration
+        # avec le frontend (Flutter web) pendant le développement.
+        # En prod, on restreint aux domaines explicitement autorisés.
+        cors_allow_origins = (
+            ["*"]
+            if (debug or settings.profile == Profile.DEV)
+            else list(settings.allowed_hosts)
+        )
         app = FastAPI(
             debug=debug,
             dependencies=[Depends(_request_scope)],
@@ -42,7 +50,7 @@ class FastAPIBuilder:
             allow_credentials=True,
             allow_headers=["*"],
             allow_methods=["*"],
-            allow_origins=settings.allowed_hosts,
+            allow_origins=cors_allow_origins,
         )
 
         @app.exception_handler(ApplicationError)

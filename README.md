@@ -46,9 +46,11 @@ DB__PASSWORD=root
 ### Tout-en-un (Docker)
 
 ```bash
-docker-compose up --build     # API + PostgreSQL
+docker compose up --build     # API + PostgreSQL (migrations Alembic au démarrage du conteneur API)
 # API disponible sur http://127.0.0.1:8000
 ```
+
+Après une mise à jour du code, si l’API tourne déjà sans rebuild : `docker compose exec api uv run alembic upgrade head`. En cas de schéma incohérent persistant, recréer le volume Postgres (`docker compose down -v`) puis relancer.
 
 ### Développement local
 
