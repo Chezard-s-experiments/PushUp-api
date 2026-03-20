@@ -1,7 +1,8 @@
 from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import DateTime, String, Text
+from sqlalchemy import DateTime, Integer, String, Text
+from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
@@ -28,5 +29,10 @@ class ExerciseTable(Table):
     id: Mapped[UUID] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(128), unique=True, index=True)
     description: Mapped[str] = mapped_column(Text())
+    exercise_type: Mapped[str] = mapped_column(String(32), index=True)
+    muscle_groups: Mapped[list[str]] = mapped_column(ARRAY(String(32)))
+    difficulty: Mapped[str] = mapped_column(String(32), index=True)
+    equipment: Mapped[str] = mapped_column(String(128))
+    estimated_duration: Mapped[int] = mapped_column(Integer())
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))

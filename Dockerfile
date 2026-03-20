@@ -9,4 +9,4 @@ RUN uv sync --frozen --no-dev
 
 COPY . .
 
-CMD ["uv", "run", "--no-dev", "uvicorn", "main:app", "--loop", "uvloop", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["sh", "-c", "uv run --no-dev alembic upgrade head && uv run --no-dev uvicorn main:app --loop uvloop --host 0.0.0.0 --port 8000"]

@@ -14,14 +14,34 @@ class ListExercisesHandler(NamedTuple):
     session: AsyncSession
 
     async def handle(self, query: ListExercisesQuery) -> ExerciseListView:
-        stmt = select(
-            ExerciseTable.id,
-            ExerciseTable.name,
-            ExerciseTable.description,
-            ExerciseTable.created_at,
-            ExerciseTable.updated_at,
-        ).order_by(ExerciseTable.created_at.desc())
+        stmt = (
+            select(
+                ExerciseTable.id,
+                ExerciseTable.name,
+                ExerciseTable.description,
+                ExerciseTable.exercise_type,
+                ExerciseTable.muscle_groups,
+                ExerciseTable.difficulty,
+                ExerciseTable.equipment,
+                ExerciseTable.estimated_duration,
+                ExerciseTable.created_at,
+                ExerciseTable.updated_at,
+            )
+            .order_by(ExerciseTable.created_at.desc())
+        )
+        if query.exercise_type is not None:
+            stmt = stmt.where(
+                ExerciseTable.exercise_type == query.exercise_type.value,
+            )
+        if query.muscle_group is not None:
+            stmt = stmt.where(
+                ExerciseTable.muscle_groups.contains([query.muscle_group.value]),
+            )
+        if query.difficulty is not None:
+            stmt = stmt.where(
+                ExerciseTable.difficulty == query.difficulty.value,
+            )
 
         rows = (await self.session.execute(stmt)).mappings().all()
-        items = [ExerciseRead.model_validate(row) for row in rows]
+        items = [ExerciseRead.model_validate(dict(row)) for row in rows]
         return ExerciseListView(items=items)
