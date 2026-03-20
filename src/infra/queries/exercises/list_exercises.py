@@ -14,21 +14,18 @@ class ListExercisesHandler(NamedTuple):
     session: AsyncSession
 
     async def handle(self, query: ListExercisesQuery) -> ExerciseListView:
-        stmt = (
-            select(
-                ExerciseTable.id,
-                ExerciseTable.name,
-                ExerciseTable.description,
-                ExerciseTable.exercise_type,
-                ExerciseTable.muscle_groups,
-                ExerciseTable.difficulty,
-                ExerciseTable.equipment,
-                ExerciseTable.estimated_duration,
-                ExerciseTable.created_at,
-                ExerciseTable.updated_at,
-            )
-            .order_by(ExerciseTable.created_at.desc())
-        )
+        stmt = select(
+            ExerciseTable.id,
+            ExerciseTable.name,
+            ExerciseTable.description,
+            ExerciseTable.exercise_type,
+            ExerciseTable.muscle_groups,
+            ExerciseTable.difficulty,
+            ExerciseTable.equipment,
+            ExerciseTable.estimated_duration,
+            ExerciseTable.created_at,
+            ExerciseTable.updated_at,
+        ).order_by(ExerciseTable.created_at.desc())
         if query.exercise_type is not None:
             stmt = stmt.where(
                 ExerciseTable.exercise_type == query.exercise_type.value,

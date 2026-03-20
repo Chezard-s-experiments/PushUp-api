@@ -30,7 +30,11 @@ class FastAPIBuilder:
         # En dev, on autorise toutes les origines afin de faciliter l'intégration
         # avec le frontend (Flutter web) pendant le développement.
         # En prod, on restreint aux domaines explicitement autorisés.
-        cors_allow_origins = ["*"] if (debug or settings.profile == Profile.DEV) else list(settings.allowed_hosts)
+        cors_allow_origins = (
+            ["*"]
+            if (debug or settings.profile == Profile.DEV)
+            else list(settings.allowed_hosts)
+        )
         app = FastAPI(
             debug=debug,
             dependencies=[Depends(_request_scope)],

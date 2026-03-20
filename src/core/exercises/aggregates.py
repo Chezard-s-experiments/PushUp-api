@@ -14,7 +14,9 @@ class Exercise(BaseModel):
     muscle_groups: list[MuscleGroup]
     difficulty: Difficulty
     equipment: str
-    estimated_duration: int = Field(ge=1, le=1440, description="Durée estimée en minutes")
+    estimated_duration: int = Field(
+        ge=1, le=1440, description="Durée estimée en minutes"
+    )
     created_at: datetime
     updated_at: datetime
 
