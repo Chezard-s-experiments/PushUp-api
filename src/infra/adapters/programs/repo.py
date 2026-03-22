@@ -123,9 +123,7 @@ class SQLAProgramRepository(ProgramRepository):
         sessions_stmt = select(SessionTemplateTable.id).where(
             SessionTemplateTable.program_id == program_id,
         )
-        session_ids = (
-            (await self.session.execute(sessions_stmt)).scalars().all()
-        )
+        session_ids = (await self.session.execute(sessions_stmt)).scalars().all()
         if not session_ids:
             return
 
@@ -158,9 +156,7 @@ class SQLAProgramRepository(ProgramRepository):
             .where(SessionTemplateTable.program_id == row.id)
             .order_by(SessionTemplateTable.order)
         )
-        session_rows = (
-            (await self.session.execute(sessions_stmt)).scalars().all()
-        )
+        session_rows = (await self.session.execute(sessions_stmt)).scalars().all()
 
         sessions: list[SessionTemplate] = []
         for s_row in session_rows:
@@ -171,9 +167,7 @@ class SQLAProgramRepository(ProgramRepository):
                 )
                 .order_by(ExerciseConfigTable.order)
             )
-            ec_rows = (
-                (await self.session.execute(ec_stmt)).scalars().all()
-            )
+            ec_rows = (await self.session.execute(ec_stmt)).scalars().all()
 
             exercises: list[ExerciseConfig] = []
             for ec_row in ec_rows:
@@ -184,9 +178,7 @@ class SQLAProgramRepository(ProgramRepository):
                     )
                     .order_by(SeriesConfigTable.order)
                 )
-                sc_rows = (
-                    (await self.session.execute(sc_stmt)).scalars().all()
-                )
+                sc_rows = (await self.session.execute(sc_stmt)).scalars().all()
                 series = [
                     SeriesConfig(
                         order=sc.order,

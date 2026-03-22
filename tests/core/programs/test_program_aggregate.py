@@ -27,7 +27,9 @@ class FakeUUID:
         return UUID(int=self.counter)
 
 
-def _series(*, order: int = 1, reps: int = 10, weight: float | None = None) -> SeriesConfig:
+def _series(
+    *, order: int = 1, reps: int = 10, weight: float | None = None
+) -> SeriesConfig:
     return SeriesConfig(order=order, reps=reps, weight=weight)
 
 
