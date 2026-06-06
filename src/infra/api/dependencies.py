@@ -33,16 +33,24 @@ async def get_claimant_id(
     return UUID(identity_data["user_id"])
 
 
+def _parse_accept_language(value: str) -> Locale | None:
+    primary = value.split(",")[0].split(";")[0].strip().replace("_", "-")
+    if not primary:
+        return None
+
+    try:
+        return Locale.parse(primary, sep="-")
+    except Exception:
+        return None
+
+
 async def get_locale(
     locale: Annotated[str | None, Header(alias="Accept-Language")] = None,
 ) -> Locale | None:
     if locale is None:
         return None
 
-    try:
-        return Locale.parse(locale, sep="-")
-    except Exception as exc:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST) from exc
+    return _parse_accept_language(locale)
 
 
 async def require_auth(

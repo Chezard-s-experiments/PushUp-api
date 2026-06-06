@@ -121,6 +121,34 @@ async def test_me_unauthorized_without_token(client: AsyncClient) -> None:
 
 
 @pytest.mark.asyncio()
+@pytest.mark.parametrize(
+    "accept_language",
+    [
+        "fr-FR,fr;q=0.9",
+        "fr_FR",
+        "en_US",
+        "invalid",
+        "*",
+    ],
+)
+async def test_login_accepts_various_accept_language_headers(
+    client: AsyncClient,
+    accept_language: str,
+) -> None:
+    email = f"locale-{uuid4().hex}@example.com"
+    password = "s3cret!"
+    await _register_and_get_token_and_user(client, email=email, password=password)
+
+    response = await client.post(
+        "/auth/login",
+        json={"email": email, "password": password},
+        headers={"Accept-Language": accept_language},
+    )
+
+    assert response.status_code == 200
+
+
+@pytest.mark.asyncio()
 async def test_me_rejects_refresh_token(client: AsyncClient) -> None:
     data = await _register_and_get_token_and_user(client)
     refresh_token = data["token"]["refresh_token"]
