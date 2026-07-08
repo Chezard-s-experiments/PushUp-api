@@ -265,6 +265,7 @@ def test_program_to_public_dict() -> None:
 class InMemoryProgramRepository(ProgramRepository):
     def __init__(self) -> None:
         self._items: dict[UUID, Program] = {}
+        self._soft_deleted: set[UUID] = set()
 
     async def add(self, program: Program) -> None:
         self._items[program.id] = program
@@ -274,12 +275,25 @@ class InMemoryProgramRepository(ProgramRepository):
 
     async def delete(self, program_id: UUID) -> None:
         self._items.pop(program_id, None)
+        self._soft_deleted.discard(program_id)
+
+    async def soft_delete(self, program_id: UUID) -> None:
+        self._soft_deleted.add(program_id)
+
+    async def has_completed_sessions(self, program_id: UUID) -> bool:
+        return False
 
     async def get_by_id(self, program_id: UUID) -> Program | None:
+        if program_id in self._soft_deleted:
+            return None
         return self._items.get(program_id)
 
     async def list_by_owner(self, owner_id: UUID) -> list[Program]:
-        return [p for p in self._items.values() if p.owner_id == owner_id]
+        return [
+            p
+            for p in self._items.values()
+            if p.owner_id == owner_id and p.id not in self._soft_deleted
+        ]
 
 
 @pytest.mark.asyncio()

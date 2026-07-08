@@ -19,6 +19,14 @@ class ProgramRepository(Protocol):
         raise NotImplementedError
 
     @abstractmethod
+    async def soft_delete(self, program_id: UUID) -> None:
+        raise NotImplementedError
+
+    @abstractmethod
+    async def has_completed_sessions(self, program_id: UUID) -> bool:
+        raise NotImplementedError
+
+    @abstractmethod
     async def get_by_id(self, program_id: UUID) -> Program | None:
         raise NotImplementedError
 

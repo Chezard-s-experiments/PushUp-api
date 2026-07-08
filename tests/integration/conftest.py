@@ -11,12 +11,17 @@ from src.settings import Settings
 
 @pytest.fixture
 async def db_engine(settings: Settings) -> AsyncIterator[AsyncEngine]:
-    """Moteur async sur la base de test. Crée les tables au premier usage."""
+    """Moteur async sur la base de test.
+
+    Recrée le schéma complet à chaque test pour garantir la cohérence
+    avec les modèles SQLAlchemy sans dépendre de l'état des migrations.
+    """
     engine = create_async_engine(
         settings.db.get_url(),
         echo=False,
     )
     async with engine.begin() as conn:
+        await conn.run_sync(Table.metadata.drop_all)
         await conn.run_sync(Table.metadata.create_all)
     yield engine
     await engine.dispose()

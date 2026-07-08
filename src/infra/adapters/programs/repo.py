@@ -2,7 +2,8 @@ from dataclasses import dataclass
 from uuid import UUID
 
 from injection import injectable
-from sqlalchemy import delete, insert, select
+from sqlalchemy import delete, func, insert, select
+from sqlalchemy import update as sa_update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.programs.aggregates import (
@@ -43,18 +44,19 @@ class SQLAProgramRepository(ProgramRepository):
         await self._insert_children(program)
 
     async def update(self, program: Program) -> None:
-        await self.session.merge(
-            ProgramTable(
-                id=program.id,
+        stmt = (
+            sa_update(ProgramTable)
+            .where(ProgramTable.id == program.id)
+            .values(
                 name=program.name,
                 description=program.description,
                 owner_id=program.owner_id,
                 duration_weeks=program.duration_weeks,
                 frequency_per_week=program.frequency_per_week,
-                created_at=program.created_at,
                 updated_at=program.updated_at,
             )
         )
+        await self.session.execute(stmt)
         await self._delete_children(program.id)
         await self._insert_children(program)
 
@@ -62,8 +64,23 @@ class SQLAProgramRepository(ProgramRepository):
         stmt = delete(ProgramTable).where(ProgramTable.id == program_id)
         await self.session.execute(stmt)
 
+    async def soft_delete(self, program_id: UUID) -> None:
+        stmt = (
+            sa_update(ProgramTable)
+            .where(ProgramTable.id == program_id)
+            .values(deleted_at=func.now())
+        )
+        await self.session.execute(stmt)
+
+    async def has_completed_sessions(self, program_id: UUID) -> bool:
+        # La table completed_session sera créée dans une étape ultérieure.
+        return False
+
     async def get_by_id(self, program_id: UUID) -> Program | None:
-        stmt = select(ProgramTable).where(ProgramTable.id == program_id)
+        stmt = select(ProgramTable).where(
+            ProgramTable.id == program_id,
+            ProgramTable.deleted_at.is_(None),
+        )
         program_row = (await self.session.execute(stmt)).scalar_one_or_none()
         if program_row is None:
             return None
@@ -72,7 +89,10 @@ class SQLAProgramRepository(ProgramRepository):
     async def list_by_owner(self, owner_id: UUID) -> list[Program]:
         stmt = (
             select(ProgramTable)
-            .where(ProgramTable.owner_id == owner_id)
+            .where(
+                ProgramTable.owner_id == owner_id,
+                ProgramTable.deleted_at.is_(None),
+            )
             .order_by(ProgramTable.created_at.desc())
         )
         rows = (await self.session.execute(stmt)).scalars().all()
